@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec $(echo -e | dmenu -i -p "count" | awk '{ print "xdotool click --delay 50 --repeat " $1 " 1"}')

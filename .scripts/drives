@@ -1,0 +1,40 @@
+#!/bin/sh
+
+sudo echo "mounting drives"
+
+echo -n "passwd: "
+read -s passwd
+echo
+
+
+if [ ! -e /dev/mapper/Documents ]; then
+	echo -n $passwd | sudo cryptsetup luksOpen /dev/sda2 Documents  -d -
+	if [ -e /dev/mapper/Documents ]; then
+		sudo mount /dev/mapper/Documents /home/trent/Documents
+		sudo chmod 777 /home/trent/Documents
+	fi
+fi
+	
+
+if [ ! -e /dev/mapper/Photos ]; then
+	echo -n $passwd | sudo cryptsetup luksOpen /dev/sda3 Photos  -d -
+	if [ -e /dev/mapper/Photos ]; then
+		sudo mount /dev/mapper/Photos /home/trent/Pictures
+		sudo chmod 777 /home/trent/Pictures
+	fi
+fi
+
+
+if [ ! -e /dev/mapper/Videos ]; then
+	echo -n $passwd | sudo cryptsetup luksOpen /dev/sda4 Videos  -d -
+	if [ -e /dev/mapper/Videos ]; then
+		sudo mount /dev/mapper/Videos /home/trent/Videos
+		sudo chmod 777 /home/trent/Videos
+	fi
+fi
+
+if [ ! $(cat /proc/mounts | grep sda1 | awk '{print 2}') = "/home/trent/Games" ]; then
+	echo ree
+	sudo mount /dev/sda1 /home/trent/Games
+	sudo chmod 777 /home/trent/Games
+fi
