@@ -1,0 +1,3 @@
+.ssh/*
+.gnupg/*.gpg
+.scripts/drives

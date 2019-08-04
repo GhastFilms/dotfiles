@@ -1,0 +1,7 @@
+xrandr --output DP-0 --right-of HDMI-0
+xrandr --output DP-0 --primary
+
+#set tablet area
+xsetwacom set "Wacom Intuos S Pen stylus" MapToOutput HEAD-0
+feh --bg-fill wallpapers/zeroTwo1.png wallpapers/zeroTwo2.png
+lightdm
