@@ -174,7 +174,9 @@ smart_gaps on
 smart_borders on
 
 bindsym $mod+p exec "flameshot gui"
-bindsym $mod+comma exec "sh /home/trent/.config/i3/launch_script.sh"
+bindsym $mod+comma exec "sh /home/trent/.local/bin/tools/launch_script"
+bindsym $mod+Shift+p exec "sh /home/trent/.local/bin/tools/lock"
+
 
 exec_always sh ~/.config/polybar/scripts/start.sh
 exec_always --no-startup-id compton
