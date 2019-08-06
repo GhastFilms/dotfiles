@@ -1,0 +1,44 @@
+#!/bin/bash
+
+
+#variables
+STATE_DIR=$HOME/.local/bin/scripts/.wallpaper/state
+WALLPAPERS_BASE_DIR=$HOME/wallpapers/wallpapers
+WALLPAPERS_SUBDIR=$(cat $STATE_DIR/dir)
+WALLPAPERS_DIR=$(echo $WALLPAPERS_BASE_DIR $WALLPAPERS_SUBDIR | awk '{ print  $1 "/" $2 }')
+
+#random
+random(){
+    local MAX=$1
+    local PREV=$2
+    local RANGE=$(($MAX+1));
+    local RESULT=$RANDOM;
+    let "RESULT %= $RANGE";
+    if [ $RESULT = $PREV ]; then
+        RESULT=$(random $MAX $PREV)
+    fi
+    echo $RESULT
+}
+
+get_random_wallpaper(){
+    local WALLPAPERS=($(ls -d -- $WALLPAPERS_DIR/* )) # this line is the problem
+    local WALLPAPER_COUNT=${#WALLPAPERS[@]}
+    local RAND=$(random $WALLPAPER_COUNT 2)
+    
+    #echo $(echo ${WALLPAPERS[$RAND]} | awk '{print "'\''"$1"'\''" }')
+    echo ${WALLPAPERS[$RAND]}
+}
+
+get_monitor_count(){
+    echo $(xrandr --listmonitors | grep Monitors | awk '{print $2}')
+}
+
+
+BACKGROUNDS=""
+for i in $(seq 1 $(get_monitor_count))
+do
+    echo $i
+    BACKGROUNDS=$(echo "$BACKGROUNDS $(get_random_wallpaper)" | awk '{print $1 " " $2}' )
+done
+
+feh --bg-fill $BACKGROUNDS
