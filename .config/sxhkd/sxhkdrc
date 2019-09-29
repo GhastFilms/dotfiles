@@ -1,0 +1,68 @@
+# alt layer
+
+alt + comma
+    exec sh /home/trent/.local/bin/tools/launch_script
+
+alt +  p
+    exec $TERMINAL -e "flameshot gui"
+
+### super layer
+
+super + m
+    exec $TERMINAL -e ncmpcpp
+
+super + b
+    exec $BROWSER
+
+super + e
+    exec $TEMINAL -e $EDITOR
+
+super + i
+    exec sxiv -t ~/Pictures
+
+super + h
+    exec nemo $HOME/Desktop
+
+
+## mpd controls
+
+#volume
+super + equal
+    mpc volume +10
+
+super + minus
+    mpc volume -10
+
+#playback
+
+super + p
+    mpc toggle
+
+# ---------------------------------------- TODO: FIX THIS ----------
+#super + s
+#    mpc shuffle
+
+#add an album to the queue
+super + u
+    exec "$HOME/.local/bin/scripts/mpc/add_album.sh"
+
+super + n
+    notify-send "$(mpc queued)" -t 2500
+
+super + s
+    mpc next
+
+super + a
+    mpc prev
+
+#super shift layer
+
+#alt shift layer
+
+alt + shift + l
+    exec "sh /home/trent/.local/bin/tools/lock"
+
+#run i3lock
+#starts i3lock with a clock and a black background
+alt + shift + p
+    i3lock -k -c 000000 --timecolor ffffffff --radius 100
