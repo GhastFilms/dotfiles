@@ -1,0 +1,5 @@
+#!/bin/sh
+
+script=$(ls /$HOME/.local/bin/scripts/.wallpaper/cmds | dmenu -i)
+
+exec $(echo "$HOME $script" | awk '{print "sh " $1 "/.local/bin/scripts/.wallpaper/cmds/" $2}')
