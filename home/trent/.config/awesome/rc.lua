@@ -45,8 +45,21 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+beautiful.init(gears.filesystem.get_configuration_dir() .. "themes/default.lua")
 
+
+-- load widgets
+local volume_widget = require("awesome-wm-widgets.volume-widget.volume")
+local batteryarc_widget = require("awesome-wm-widgets.batteryarc-widget.batteryarc")
+local brightness_widget = require("awesome-wm-widgets.brightness-widget.brightness")
+local logout_menu_widget = require("awesome-wm-widgets.logout-menu-widget.logout-menu")
+local logout_popup = require("awesome-wm-widgets.logout-popup-widget.logout-popup")
+local docker_widget = require("awesome-wm-widgets.docker-widget.docker")
+local fs_widget = require("awesome-wm-widgets.fs-widget.fs-widget")
+local cpu_widget = require("awesome-wm-widgets.cpu-widget.cpu-widget")
+local ram_widget = require("awesome-wm-widgets.ram-widget.ram-widget")
+
+local mpdarc_widget = require("awesome-wm-widgets.mpdarc-widget.mpdarc")
 -- This is used later as the default terminal and editor to run.
 terminal = os.getenv("TERM") or "xterm"
 editor = os.getenv("EDITOR") or "nvim"
@@ -61,17 +74,17 @@ modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
-    awful.layout.suit.floating,
+    awful.layout.suit.spiral,
+    --awful.layout.suit.spiral.dwindle,
     awful.layout.suit.tile,
     awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
+    awful.layout.suit.floating,
+    --awful.layout.suit.tile.bottom,
     awful.layout.suit.tile.top,
     awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    -- awful.layout.suit.spiral,
-    -- awful.layout.suit.spiral.dwindle,
+    --awful.layout.suit.fair.horizontal,
     awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
+    --awful.layout.suit.max.fullscreen,
     awful.layout.suit.magnifier,
     awful.layout.suit.corner.nw,
     -- awful.layout.suit.corner.ne,
@@ -107,7 +120,7 @@ mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
+mytextclock = wibox.widget.textclock("%a %b %d - [%I:%M:%S]", 1)
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -166,6 +179,9 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+
+
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
@@ -197,6 +213,12 @@ awful.screen.connect_for_each_screen(function(s)
         buttons = tasklist_buttons
     }
 
+
+    -- Widgets
+
+    -- local connman = require("awesome-connman_widget.src.connman_widget")
+    -- connman.gui_client = "wicd"
+
     -- Create the wibox
     s.mywibox = awful.wibar({ position = "top", screen = s })
 
@@ -205,17 +227,53 @@ awful.screen.connect_for_each_screen(function(s)
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
-            mylauncher,
+            --mylauncher,
+	    s.mylayoutbox,
             s.mytaglist,
             s.mypromptbox,
         },
         s.mytasklist, -- Middle widget
         { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
+	    layout = wibox.layout.fixed.horizontal,
+            --s.mylayoutbox,
+            --mykeyboardlayout,
             wibox.widget.systray(),
+	    fs_widget({
+		mounts = {'/', '/home'}
+	    }),
+	    cpu_widget({
+		width = 50,
+		step_width = 2,
+		step_spacing=1
+	    }),
+	    ram_widget({
+
+	    }),
+	    volume_widget{
+		widget_type = 'vertical_bar',
+		width = 10,
+		margins = 10,
+		mixer_cmd = 'pavucontrol',
+		-- device = 'default',
+		--shape = 'powerline',
+		with_icon = true
+	    },
+	    mpdarc_widget,
+	    docker_widget{
+		number_of_containers = 5
+	    },
+	    batteryarc_widget{
+		arc_thickness = 3
+	    },
+	    brightness_widget{
+		type = 'icon_and_text',
+		program = 'brightnessctl',
+		step = 5,
+	    },
             mytextclock,
-            s.mylayoutbox,
+	    logout_menu_widget{
+		onlock = function() awful.spawn.with_shell('i3lock -k') end
+	    }
         },
     }
 end)
@@ -280,8 +338,8 @@ globalkeys = gears.table.join(
               {description = "open a terminal", group = "launcher"}),
     awful.key({ modkey, "Control" }, "r", awesome.restart,
               {description = "reload awesome", group = "awesome"}),
-    awful.key({ modkey, "Shift"   }, "q", awesome.quit,
-              {description = "quit awesome", group = "awesome"}),
+    awful.key({ modkey, "Shift"   }, "q", function() logout_popup.launch() end,
+              {description = "opens the logout popup", group = "awesome"}),
 
     awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
               {description = "increase master width factor", group = "layout"}),
@@ -328,8 +386,41 @@ globalkeys = gears.table.join(
               end,
               {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
-    awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+    awful.key({ modkey }, "p", function() 
+		menubar.show() end,
+		{description = "show the menubar", group = "launcher"}),
+
+    -- Volume
+    awful.key({  }, "XF86AudioLowerVolume", function() 
+	    	volume_widget:dec(5) end,
+    		{description = "Lower the volume", group = "function"}),
+    awful.key({ }, "XF86AudioRaiseVolume", function() 
+	    	volume_widget:inc(5) end,
+    		{description = "Raise the volume", group = "function"}),
+    awful.key({ }, "XF86AudioMute", function() 
+	    	volume_widget:toggle() end,
+    		{description = "Mute the volume", group = "function"}),
+    awful.key({ }, "XF86AudioPrev", 
+    		function() awful.spawn.with_shell('mpc prev') end, 
+    		{description = "Changes to the previous song", group = "function"}),
+    awful.key({ }, "XF86AudioPlay", 
+    		function() awful.spawn.with_shell('mpc toggle') end, 
+    		{description = "Pauses/plays the current song", group = "function"}),
+    awful.key({ }, "XF86AudioNext", 
+    		function() awful.spawn.with_shell('mpc next') end, 
+    		{description = "Changes to the next song", group = "function"}),
+    awful.key({ }, "XF86Search", 
+    		function() awful.spawn.with_shell('rofi -show drun') end, 
+    		{description = "Search key", group = "function"}),
+    awful.key({ }, "XF86MonBrightnessDown", function() 
+		brightness_widget:dec() end, 
+    		{description = "Lowers the brightness", group = "function"}),
+    awful.key({ }, "XF86MonBrightnessUp", function() 
+	    	brightness_widget:inc() end, 
+    		{description = "Raises the brightness", group = "function"}),
+    awful.key({ }, "XF86Sleep", function()  
+    		end, 
+    		{description = "Sleeps the computer", group = "function"})
 )
 
 clientkeys = gears.table.join(
@@ -567,5 +658,6 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 awful.spawn.with_shell("picom")
--- awful.spawn.with_shell("nitrogen --restore")
-
+awful.spawn.with_shell("nm-applet")
+awful.spawn.with_shell("blueman-applet")
+awful.spawn.with_shell("nitrogen --restore")
