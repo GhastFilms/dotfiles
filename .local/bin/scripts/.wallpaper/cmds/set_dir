@@ -1,3 +1,0 @@
-#!/bin/sh
-
-ls /$HOME/wallpapers/wallpapers | dmenu -i > $HOME/.local/bin/scripts/.wallpaper/state/dir
